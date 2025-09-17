@@ -1,3 +1,8 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+/* Global transition for Safari nav bar background sampling */
+html, body {
+	transition: background-color 200ms ease;
+}

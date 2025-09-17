@@ -3,7 +3,7 @@
 
 	let metaTag: HTMLMetaElement | null = null;
 	let currentColor = '#ffffff';
-	let splitBars = false; // when true: control status & nav independently
+	let splitBars = true; // default to split for better iOS reliability
 
 	let observerTop: IntersectionObserver | null = null;
 	let observerBottom: IntersectionObserver | null = null;
@@ -34,20 +34,33 @@
 	}
 
 	function setupSyncedScroll() {
-		const onScroll = () => {
+		let ticking = false;
+		const update = () => {
 			const unit = window.innerHeight;
 			const idx = Math.min(colors.length - 1, Math.floor(window.scrollY / unit));
 			currentColor = colors[idx];
 			setBodyColor(currentColor);
 			setThemeColor(currentColor);
+			repaintThemeColor(currentColor); // ensure nav bar repaints
+			ticking = false;
+		};
+		const onScroll = () => {
+			if (!ticking) {
+				ticking = true;
+				requestAnimationFrame(update);
+			}
 		};
 		window.addEventListener('scroll', onScroll);
-		onScroll();
+		update();
 		return () => window.removeEventListener('scroll', onScroll);
 	}
 
 	function setupSplitObservers() {
 		const all = Array.from(document.querySelectorAll('[data-metathemeswap-color]'));
+		// determine sticky header height to place top sampling line below it
+		const header = document.querySelector('.js-modebar') as HTMLElement | null;
+		const headerH = header ? header.offsetHeight : 0;
+
 		const topCb: IntersectionObserverCallback = (entries) => {
 			const intersecting = entries.find((e) => e.isIntersecting);
 			if (!intersecting || !metaTag) return;
@@ -65,11 +78,13 @@
 			repaintThemeColor(currentColor);
 		};
 
+		// create ~1px sampling lines: one under the sticky header, one at viewport bottom
+		const vh = window.innerHeight;
 		observerTop = new IntersectionObserver(topCb, {
-			rootMargin: '-0.05% 0px -99.9% 0px'
+			rootMargin: `-${headerH}px 0px -${Math.max(vh - headerH - 1, 0)}px 0px`
 		});
 		observerBottom = new IntersectionObserver(bottomCb, {
-			rootMargin: '-99.9% 0px -0.05% 0px'
+			rootMargin: `-${Math.max(vh - 1, 0)}px 0px 0px 0px`
 		});
 		all.forEach((el) => {
 			observerTop?.observe(el);
@@ -112,7 +127,14 @@
 			(el as HTMLElement).dataset.metathemeswapColor = color;
 		});
 		initMode();
-		return () => teardown?.();
+		const onResize = () => initMode();
+		window.addEventListener('resize', onResize);
+		window.addEventListener('orientationchange', onResize);
+		return () => {
+			window.removeEventListener('resize', onResize);
+			window.removeEventListener('orientationchange', onResize);
+			teardown?.();
+		};
 	});
 </script>
 
@@ -122,7 +144,7 @@
 </svelte:head>
 
 <div class="min-h-screen">
-	<div class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-200 text-sm text-gray-700">
+	<div class="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-200 text-sm text-gray-700 js-modebar">
 		<div class="max-w-3xl mx-auto flex items-center gap-3 py-2 px-4">
 			<span class="font-medium">Mode:</span>
 			<button
@@ -187,8 +209,3 @@
 	</section>
 </div>
 
-<style>
-	body {
-		transition: background-color 0.3s ease;
-	}
-</style>
