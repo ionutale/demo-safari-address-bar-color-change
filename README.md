@@ -1,38 +1,25 @@
-# sv
+# Safari Address Bar Color Demo
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Live demo: https://ionutale.github.io/demo-safari-address-bar-color-change
 
-## Creating a project
+This SvelteKit demo showcases dynamic coloring of Safari/WebKit status and navigation bars using the `theme-color` meta tag and the page `background-color`. It includes two modes:
+- Synced: both bars follow the section color smoothly.
+- Split: status bar follows the top-of-screen element, while the navigation bar follows the bottom, using an IntersectionObserver trick.
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Develop
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+pnpm install
+pnpm dev
 ```
 
-## Building
-
-To create a production version of your app:
+## Build
 
 ```sh
-npm run build
+pnpm build
+pnpm preview
 ```
 
-You can preview the production build with `npm run preview`.
+## Deploy (GitHub Pages)
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Push to `main`. A GitHub Actions workflow builds the site and publishes the `build/` output to Pages at the URL above. The SvelteKit base path is configured for `/demo-safari-address-bar-color-change`.
