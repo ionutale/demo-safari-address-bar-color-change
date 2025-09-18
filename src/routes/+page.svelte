@@ -14,7 +14,8 @@
 		'#111111',
 		'#2563eb',
 		'#ef4444',
-		'#22c55e'
+		// rgb(51, 51, 51)
+		'#333333',
 	];
 
 	function setBodyColor(color: string) {
